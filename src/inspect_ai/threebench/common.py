@@ -17,7 +17,11 @@ def convert_task_config_to_sample(task_config: TaskConfig) -> tuple[str, Sample]
     if not dockerfile:
         raise ValueError(f"Dockerfile not found in {task_config.name}")
 
-    setup_sh = files.get("setup.sh", None)
+    if "setup.sh" in files:
+        setup_sh = files["setup.sh"]
+        del files["setup.sh"]
+    else:
+        setup_sh = None
 
     sample = Sample(
         id=task_config.name,  # Assuming the name is used as the ID

@@ -12,11 +12,12 @@ from inspect_ai.threebench.common import load_and_convert_toml_to_sample
 names = """
 binpwn_gdb_bash
 impact_defacing
+null_writing
 """
 
 paths = [Path(f"./task_configs/{name}.toml") for name in names.split()]
 
-toml_file_path = paths[1]
+toml_file_path = paths[2]
 dockerfile, sample = load_and_convert_toml_to_sample(toml_file_path)
 
 
