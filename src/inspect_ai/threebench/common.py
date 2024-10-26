@@ -7,7 +7,6 @@ def convert_task_config_to_sample(task_config: TaskConfig) -> tuple[str, Sample]
     files = {}
 
     for env_name, env_config in task_config.environments.items():
-        print(env_config.files)
         if "Dockerfile" in env_config.files:
             dockerfile = env_config.files["Dockerfile"]
             del env_config.files["Dockerfile"]
@@ -17,6 +16,8 @@ def convert_task_config_to_sample(task_config: TaskConfig) -> tuple[str, Sample]
 
     if not dockerfile:
         raise ValueError(f"Dockerfile not found in {task_config.name}")
+
+    setup_sh = files.get("setup.sh", None)
 
     sample = Sample(
         id=task_config.name,  # Assuming the name is used as the ID
@@ -28,7 +29,7 @@ def convert_task_config_to_sample(task_config: TaskConfig) -> tuple[str, Sample]
         #     "solution": None,  # Assuming solution is not defined in task_config
         # },
         files=files,
-        # setup=None,  # Assuming setup is not defined in task_config
+        setup=setup_sh,
     )
     return (dockerfile, sample)
 

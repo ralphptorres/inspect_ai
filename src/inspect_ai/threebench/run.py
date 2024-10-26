@@ -9,8 +9,14 @@ from inspect_ai.solver import Solver, basic_agent, solver, system_message
 from inspect_ai.tool import bash, python
 from inspect_ai.threebench.common import load_and_convert_toml_to_sample
 
+names = """
+binpwn_gdb_bash
+impact_defacing
+"""
 
-toml_file_path = Path("./task_configs/binpwn_gdb_bash.toml")
+paths = [Path(f"./task_configs/{name}.toml") for name in names.split()]
+
+toml_file_path = paths[1]
 dockerfile, sample = load_and_convert_toml_to_sample(toml_file_path)
 
 
