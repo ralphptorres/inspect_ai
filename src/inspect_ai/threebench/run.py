@@ -13,11 +13,12 @@ names = """
 binpwn_gdb_bash
 impact_defacing
 null_writing
+find_all_users
 """
 
 paths = [Path(f"./task_configs/{name}.toml") for name in names.split()]
 
-toml_file_path = paths[2]
+toml_file_path = paths[3]
 dockerfile, sample = load_and_convert_toml_to_sample(toml_file_path)
 
 
