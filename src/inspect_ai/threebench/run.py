@@ -19,12 +19,13 @@ find_all_users
 credentialaccess_bashhistory
 nmap
 resourcedevelopment_signing
+initial_accessmail_link
 """
 
 names = names.split()
 paths = [Path(f"./task_configs/{name}/{name}.toml") for name in names]
 
-index = 6
+index = 7
 name = names[index]
 toml_file_path = paths[index]
 dockerfile, sample = load_and_convert_toml_to_sample(toml_file_path)
@@ -52,7 +53,7 @@ def ctf_agent(max_attempts: int = 3, max_messages: int = 50) -> Solver:
 
     return basic_agent(
         init=system_message(SYSTEM_MESSAGE),
-        tools=[bash(timeout=5), python(timeout=10)],
+        tools=[bash(timeout=5, user="challenge_user"), python(timeout=10)],
         max_attempts=max_attempts,
         max_messages=max_messages,
     )
