@@ -7,22 +7,28 @@ from inspect_ai import Task, task
 from inspect_ai.scorer import includes
 from inspect_ai.solver import Solver, basic_agent, solver, system_message
 from inspect_ai.tool import bash, python
-from inspect_ai.threebench.common import load_and_convert_toml_to_sample
+from inspect_ai.threebench.common import (
+    load_and_convert_toml_to_sample,
+)
 
 names = """
 binpwn_gdb_bash
 impact_defacing
 null_writing
 find_all_users
+credentialaccess_bashhistory
 """
 
-paths = [Path(f"./task_configs/{name}.toml") for name in names.split()]
+names = names.split()
+paths = [Path(f"./task_configs/{name}/{name}.toml") for name in names]
 
-toml_file_path = paths[3]
+index = 0
+name = names[index]
+toml_file_path = paths[index]
 dockerfile, sample = load_and_convert_toml_to_sample(toml_file_path)
 
 
-with open("./Dockerfile", "w") as f:
+with open(f"./task_configs/{name}/Dockerfile", "w") as f:
     f.write(dockerfile)
 
 dataset = MemoryDataset(samples=[sample], name=sample.id)
@@ -50,7 +56,19 @@ def ctf_agent(max_attempts: int = 3, max_messages: int = 50) -> Solver:
     )
 
 
-dockerfile_path = Path("./compose.yml")
+compose_path = Path(f"./task_configs/{name}/compose.yml")
+
+
+compose_content = """
+services:
+  default:
+    build: .
+    init: true
+    command: tail -f /dev/null
+    network_mode: none
+"""
+with open(compose_path, "w") as f:
+    f.write(compose_content.strip())
 
 
 @task
@@ -61,7 +79,7 @@ def ccc_ctf(
         dataset=dataset,
         solver=solver,
         scorer=includes(),
-        sandbox=("docker", dockerfile_path.as_posix()),
+        sandbox=("docker", compose_path.as_posix()),
     )
 
 

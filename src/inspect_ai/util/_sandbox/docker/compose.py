@@ -271,6 +271,7 @@ async def compose_command(
 
     # Execute the command
     sandbox_log(f"compose command: {shlex.join(compose_command)}")
+    print(f"compose command: {shlex.join(compose_command)}")
     result = await subprocess(
         compose_command,
         input=input,

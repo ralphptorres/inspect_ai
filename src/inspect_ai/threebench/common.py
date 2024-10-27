@@ -27,12 +27,7 @@ def convert_task_config_to_sample(task_config: TaskConfig) -> tuple[str, Sample]
         id=task_config.name,  # Assuming the name is used as the ID
         input=task_config.elicitations[0].prefilled_messages[0].content,
         target=task_config.ruleset.flag,  # Assuming the version is used as the target
-        # metadata={
-        #     "source": task_config.environments,  # Assuming environments are used as source
-        #     "tags": task_config.tags,  # Using tags from TaskConfig
-        #     "solution": None,  # Assuming solution is not defined in task_config
-        # },
-        files=files,
+        # files=files,
         setup=setup_sh,
     )
     return (dockerfile, sample)
