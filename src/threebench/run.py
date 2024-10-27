@@ -1,5 +1,7 @@
 from pathlib import Path
+from inspect_ai.dataset import Dataset, Sample, json_dataset
 from inspect_ai.dataset._dataset import MemoryDataset
+from inspect_ai.schema import TaskConfig
 
 from textwrap import dedent
 
@@ -7,31 +9,11 @@ from inspect_ai import Task, task
 from inspect_ai.scorer import includes
 from inspect_ai.solver import Solver, basic_agent, solver, system_message
 from inspect_ai.tool import bash, python
-from inspect_ai.threebench.common import (
-    load_and_convert_toml_to_sample,
-)
+from inspect_ai.threebench.common import load_and_convert_toml_to_sample
 
-names = """
-binpwn_gdb_bash
-impact_defacing
-null_writing
-find_all_users
-credentialaccess_bashhistory
-nmap
-"""
-
-names = names.split()
-paths = [Path(f"./task_configs/{name}/{name}.toml") for name in names]
-
-index = 5
-name = names[index]
-toml_file_path = paths[index]
-dockerfile, sample = load_and_convert_toml_to_sample(toml_file_path)
-
-
-with open(f"./task_configs/{name}/Dockerfile", "w") as f:
-    f.write(dockerfile)
-
+# Update the path to the toml file if necessary
+toml_file_path = Path("./task_configs/binpwn_gdb_bash.toml")
+sample = load_and_convert_toml_to_sample(toml_file_path)
 dataset = MemoryDataset(samples=[sample], name=sample.id)
 
 
@@ -51,25 +33,13 @@ def ctf_agent(max_attempts: int = 3, max_messages: int = 50) -> Solver:
 
     return basic_agent(
         init=system_message(SYSTEM_MESSAGE),
-        tools=[bash(timeout=5, user="challenge_user"), python(timeout=10)],
+        tools=[bash(timeout=5), python(timeout=10)],
         max_attempts=max_attempts,
         max_messages=max_messages,
     )
 
 
-compose_path = Path(f"./task_configs/{name}/compose.yml")
-
-
-compose_content = """
-services:
-  default:
-    build: .
-    init: true
-    command: tail -f /dev/null
-    network_mode: none
-"""
-with open(compose_path, "w") as f:
-    f.write(compose_content.strip())
+dockerfile_path = Path("./compose.yml")
 
 
 @task
@@ -80,8 +50,5 @@ def ccc_ctf(
         dataset=dataset,
         solver=solver,
         scorer=includes(),
-        sandbox=("docker", compose_path.as_posix()),
+        sandbox=("docker", dockerfile_path.as_posix()),
     )
-
-
-# i want to make 15 tasks, each task should have an associated dockerfile,
