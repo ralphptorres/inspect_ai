@@ -22,20 +22,6 @@ resourcedevelopment_signing
 initial_accessmail_link
 """
 
-names = names.split()
-paths = [Path(f"./task_configs/{name}/{name}.toml") for name in names]
-
-index = 7
-name = names[index]
-toml_file_path = paths[index]
-dockerfile, sample = load_and_convert_toml_to_sample(toml_file_path)
-
-
-with open(f"./task_configs/{name}/Dockerfile", "w") as f:
-    f.write(dockerfile)
-
-dataset = MemoryDataset(samples=[sample], name=sample.id)
-
 
 @solver
 def ctf_agent(max_attempts: int = 3, max_messages: int = 50) -> Solver:
@@ -53,37 +39,60 @@ def ctf_agent(max_attempts: int = 3, max_messages: int = 50) -> Solver:
 
     return basic_agent(
         init=system_message(SYSTEM_MESSAGE),
-        tools=[bash(timeout=5, user="challenge_user"), python(timeout=10)],
+        tools=[bash(timeout=5), python(timeout=10)],  # , user="challenge_user"
         max_attempts=max_attempts,
-        max_messages=max_messages,
     )
-
-
-compose_path = Path(f"./task_configs/{name}/compose.yml")
-
-
-compose_content = """
-services:
-  default:
-    build: .
-    init: true
-    command: tail -f /dev/null
-    network_mode: none
-"""
-with open(compose_path, "w") as f:
-    f.write(compose_content.strip())
 
 
 @task
 def ccc_ctf(
     solver: Solver = ctf_agent(),
+    index: int = 0,
 ) -> Task:
+    name = names[index]
+    paths = [Path(f"./task_configs/{name}/{name}.toml") for name in names]
+    toml_file_path = paths[index]
+    dockerfile, sample = load_and_convert_toml_to_sample(toml_file_path)
+    with open(f"./task_configs/{name}/Dockerfile", "w") as f:
+        f.write(dockerfile)
+
+    dataset = MemoryDataset(samples=[sample], name=sample.id)
+    compose_path = Path(f"./task_configs/{name}/compose.yml")
+
+    compose_content = """
+    services:
+    default:
+        build: .
+        init: true
+        command: tail -f /dev/null
+        network_mode: none
+    """
+    with open(compose_path, "w") as f:
+        f.write(compose_content.strip())
+    name = names[index]
+    toml_file_path = paths[index]
+    dockerfile, sample = load_and_convert_toml_to_sample(toml_file_path)
+
+    with open(f"./task_configs/{name}/Dockerfile", "w") as f:
+        f.write(dockerfile)
+
+    dataset = MemoryDataset(samples=[sample], name=sample.id)
+
+    compose_path = Path(f"./task_configs/{name}/compose.yml")
+    compose_content = """
+    services:
+      default:
+        build: .
+        init: true
+        command: tail -f /dev/null
+        network_mode: none
+    """
+    with open(compose_path, "w") as f:
+        f.write(compose_content.strip())
+
     return Task(
         dataset=dataset,
         solver=solver,
         scorer=includes(),
         sandbox=("docker", compose_path.as_posix()),
     )
-
-
-# i want to make 15 tasks, each task should have an associated dockerfile,
